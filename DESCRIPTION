@@ -1,0 +1,12 @@
+Package: StatAnalyzeR
+Type: Package
+Title: It provides different types of statistical analysis and helps to generate suitable statistical summary outputs ready for publications
+Version: 0.1.0
+Author: Rajesh Majumder
+Maintainer: Rajesh Majumder <rajesh.majumder@sjri.res.in>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.1
