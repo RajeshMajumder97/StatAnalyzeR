@@ -149,7 +149,6 @@ missing.count=function(data){
 #' @param group must be factor with greater than 2 levels.
 #' @param xname Name of numeric variable. Default is the name of x.
 #'
-#'
 #' @return
 #' N = Number of observations in \code{x}.
 #'
