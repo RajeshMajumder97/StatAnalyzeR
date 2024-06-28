@@ -2,5 +2,12 @@
 
 export(descriptive)
 export(descriptive_groupby)
+export(freq_table)
+export(freq_table_group_by)
+export(indep_two_Populations)
+export(indp_K_Populations)
 export(missing.count)
-export(tab_indp_K_Populations)
+export(mytab_two_two_Contingency)
+export(paired_one_Populations)
+export(pairwise_Comparison_for_K_Populations)
+import(FSA)
