@@ -459,16 +459,11 @@ freq_table_group_by=function(x,y,margin=1,conf.Int.=FALSE,conf.level=0.95){
 #'
 #' @export
 indep_two_Populations = function(x,group,basegroup=c(1,2),xname=deparse(substitute(x)),plot=FALSE,shp=FALSE){
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> 8b023c2f6a955c6315d837e2cf9e2fbd7422ca1a
   descrip=function(x){c(N=length(na.omit(x)),Mean=round(mean(x,na.rm=T),2),S.D=round(sd(x,na.rm=T),2),Median=round(median(x,na.rm=T),2),MIN=round(min(x,na.rm = T),2),MAX=round(max(x,na.rm = T),2),I.Q.R=paste("(",sprintf("%0.2f",summary(x)[2]),",",sprintf("%0.2f",summary(x)[5]),")",sep=""))}
   tab=do.call(rbind,tapply(x,group,descrip))
-  
+
   ## if shapiro.test$p-value >0.05 i.e not significant => the data is Normal otherwise, <0.05 i.e., significant then it is skewed
-  
+
   if(plot==TRUE){
     def.par <- par(no.readonly = TRUE) ## Default layout
     layout( matrix(c(1,2,3,3), nrow=2, byrow=TRUE) )
@@ -481,7 +476,7 @@ indep_two_Populations = function(x,group,basegroup=c(1,2),xname=deparse(substitu
     boxplot(x~group,col=adjustcolor(c("red","blue"), alpha.f = 0.40))
     par(def.par)
   }
-  
+
   if(sum(is.na(tab[,3]))>0){
     tab=data.frame(Var=c(xname,rep("",nlevels(group)-1)),
                    Group=c(deparse(substitute(group)),rep("",nlevels(group)-1)),
@@ -498,7 +493,7 @@ indep_two_Populations = function(x,group,basegroup=c(1,2),xname=deparse(substitu
     ##---- Normality Test Shapiro-test ----##
     if(shp==T){
       shp= c(round(shapiro.test(subset(x,group==levels(group)[1]))$p.value,3),round(shapiro.test(subset(x,group==levels(group)[2]))$p.value,3))
-      
+
       tab=data.frame(Var=c(xname,rep("",nlevels(group)-1)),
                      Group=c(deparse(substitute(group)),rep("",nlevels(group)-1)),
                      Levels=levels(group),
@@ -531,7 +526,7 @@ indep_two_Populations = function(x,group,basegroup=c(1,2),xname=deparse(substitu
       return(tab)
     }
   }
-  
+
 }
 
 
