@@ -23,3 +23,10 @@ freq_table(
 \description{
 Creates frequency frequencies and percentages of the different levels of a factor variable.
 }
+\examples{
+
+## iris data:
+
+with(iris,freq_table(x = Species,conf.Int. = TRUE))
+
+}

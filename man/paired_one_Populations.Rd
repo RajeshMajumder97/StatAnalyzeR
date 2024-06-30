@@ -2,7 +2,7 @@
 % Please edit documentation in R/descriptive.R
 \name{paired_one_Populations}
 \alias{paired_one_Populations}
-\title{One sample pare-wise comparison test}
+\title{Paired One sample test}
 \usage{
 paired_one_Populations(x.before, x.after, var)
 }

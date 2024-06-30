@@ -7,7 +7,7 @@
 indep_two_Populations(
   x,
   group,
-  basegroup = 1,
+  basegroup = c(1, 2),
   xname = deparse(substitute(x)),
   plot = FALSE,
   shp = FALSE

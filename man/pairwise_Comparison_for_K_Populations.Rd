@@ -2,7 +2,7 @@
 % Please edit documentation in R/descriptive.R
 \name{pairwise_Comparison_for_K_Populations}
 \alias{pairwise_Comparison_for_K_Populations}
-\title{One sample pare-wise comparison test}
+\title{More than two sample pare-wise comparison test}
 \usage{
 pairwise_Comparison_for_K_Populations(x, group, dunn.method = "bh")
 }
@@ -36,7 +36,8 @@ DunnTest_P.adj = Dunn test's adjusted P-value by using bh method.
 DunnTest_P.unadj= Dunn test's adjusted P-value to determine statistical significance for each pairwise comparison.
 }
 \description{
-One sample pare-wise comparison test
+This function helps to perform parametric TukeyHSD post-hoc test and  non-parametric Dunn test
+for more than 2 independent groups, to check their association.
 }
 \note{
 Terms like "unadjusted p-value" and "adjusted p-value" are frequently used in statistical hypothesis testing,

@@ -205,7 +205,7 @@ indp_K_Populations = function(x,group,xname=deparse(substitute(x))){
 }
 
 
-#' One sample pare-wise comparison test
+#' Paired One sample test
 #'
 #'
 #' This function helps to compare the distribution of two samples when each observation
@@ -267,9 +267,10 @@ paired_one_Populations = function(x.before,x.after,var){
 }
 
 
-#' One sample pare-wise comparison test
+#' More than two sample pare-wise comparison test
 #'
-#'
+#' This function helps to perform parametric TukeyHSD post-hoc test and  non-parametric Dunn test
+#' for more than 2 independent groups, to check their association.
 #'
 #'
 #' @param x must be numeric.
@@ -371,6 +372,16 @@ pairwise_Comparison_for_K_Populations = function(x,group,dunn.method="bh"){
 #'
 #'
 #' @export
+#'
+#'
+#' @examples
+#'
+#' ## iris data:
+#'
+#' with(iris,freq_table(x = Species,conf.Int. = TRUE))
+#'
+#' @import
+#' DescTools
 
 freq_table=function(x,xname=deparse(substitute(x)),conf.Int.=FALSE,conf.level=0.95){
   if(conf.Int.==FALSE){
@@ -379,10 +390,9 @@ freq_table=function(x,xname=deparse(substitute(x)),conf.Int.=FALSE,conf.level=0.
     return(tabl)
   }
   else{
-    require(DescTools)
     tabl=data.frame(var=c(xname,rep("",nlevels(x)-1)),table(x),Per=round(100*prop.table(table(x)),2))[,-4]
     names(tabl)=c("Var","Group","Freq","Per(%)")
-    Confi= MultinomCI(tabl$`Per(%)`,conf.level=conf.level,method="sisonglaz") # Confidence Interval for Multinomial Distribution
+    Confi= DescTools::MultinomCI(tabl$`Per(%)`,conf.level=conf.level,method="sisonglaz") # Confidence Interval for Multinomial Distribution
     tabl$`95% C.I`= paste0("(",round(Confi[,2]*100,2),",",round(Confi[,3]*100,2),")")
     return(tabl)
   }
@@ -394,43 +404,51 @@ freq_table=function(x,xname=deparse(substitute(x)),conf.Int.=FALSE,conf.level=0.
 #'
 #'
 #' @export
-freq_table_group_by=function(Exposure,margin=1,Outcome,conf.Int.=FALSE,conf.level=0.95){
+#'
+#' @import
+#' DescTools
+freq_table_group_by=function(x,y,margin=1,conf.Int.=FALSE,conf.level=0.95){
   if(conf.Int.==FALSE){
-    xname=deparse(substitute(Exposure))
-    tab=table(Exposure,Outcome)
-    dat= data.frame(matrix(paste0(tab,"(",round(prop.table(table(Exposure,Outcome),margin = margin)*100,2),"%)"),dim(tab)))
-    names(dat)= levels(Outcome)
-    dat=data.frame(Var=c(xname,rep("",nlevels(Exposure)-1)),
-                   Levels= levels(Exposure),
+    xname=deparse(substitute(x))
+    tab=table(x,y)
+    dat= data.frame(matrix(paste0(tab,"(",round(prop.table(table(x,y),margin = margin)*100,2),"%)"),dim(tab)))
+    names(dat)= levels(y)
+    Tab=data.frame(Var=c(xname,rep("",nlevels(x)-1)),
+                   Levels= levels(x),
                    dat)
-    return(dat)
+    return(Tab)
   }
   else{
-    require(DescTools)
-    xname=deparse(substitute(Exposure))
-    tab=table(Exposure,Outcome)
-    dat= data.frame(matrix(paste0(tab,"(",round(prop.table(table(Exposure,Outcome),margin = margin)*100,2),"%)"),dim(tab)))
-    names(dat)= levels(Outcome)
+    xname=deparse(substitute(x))
+    yname= deparse(substitute(y))
+    tab=table(x,y)
+    r= nrow(tab)
+    c=ncol(tab)
     if(margin==1){
-      Conf1= t(round(MultinomCI(tab[1,],conf.level=conf.level,method="sisonglaz")*100,2))
-      Conf2= t(round(MultinomCI(tab[2,],conf.level=conf.level,method="sisonglaz")*100,2))
+      Tab=NULL
+      for(i in 1:r){
+        Tab= rbind(Tab,data.frame(Levels=c(levels(x)[i],rep("",c-1)),
+                                  Group= rownames(DescTools::MultinomCI(tab[i,])),
+                                  N= tab[i,],
+                                  round(data.frame(DescTools::MultinomCI(tab[i,]),row.names = NULL)*100,2)))
+      }
+      Tab=data.frame(Var=c(xname,rep("",dim(Tab)[1]-1)),
+                     Tab)
+      names(Tab)[c(3:7)]= c(yname,"N","Prop.","LCL","UCL")
+    }else{
+      Tab=NULL
+      for(i in 1:c){
+        Tab= rbind(Tab,data.frame(Levels=c(levels(data$y)[i],rep("",r-1)),
+                                  Group= rownames(DescTools::MultinomCI(tab[,i])),
+                                  N= tab[,i],
+                                  round(data.frame(DescTools::MultinomCI(tab[,i]),row.names = NULL)*100,2)))
+      }
+      Tab=data.frame(Var=c(yname,rep("",dim(Tab)[1]-1)),
+                     Tab)
+      names(Tab)[c(3:7)]= c(xname,"N","Prop.","LCL","UCL")
     }
-    else{
-      Conf1= t(round(MultinomCI(tab[,1],conf.level=conf.level,method="sisonglaz")*100,2))
-      Conf2= t(round(MultinomCI(tab[,2],conf.level=conf.level,method="sisonglaz")*100,2))
-    }
-
-    dat=data.frame(Var=c(xname,rep("",nlevels(Exposure)-1)),
-                   Levels= levels(Exposure),
-                   dat,
-                   CI1=c(paste0("(",Conf1[-1,1][1],",",Conf1[-1,1][2],")"),paste0("(",Conf2[-1,1][1],",",Conf2[-1,1][2],")")),
-                   CI2=c(paste0("(",Conf1[-1,2][1],",",Conf1[-1,2][2],")"),paste0("(",Conf2[-1,2][1],",",Conf2[-1,2][2],")")))
-
-
-    names(dat)=c(names(dat)[1:4],paste0("CI(%)for ",levels(Outcome)[1]),paste0("CI(%)for ",levels(Outcome)[2]))
-    return(dat)
+    return(Tab)
   }
-
 }
 
 
@@ -440,7 +458,8 @@ freq_table_group_by=function(Exposure,margin=1,Outcome,conf.Int.=FALSE,conf.leve
 #'
 #'
 #' @export
-indep_two_Populations = function(x,group,basegroup=1,xname=deparse(substitute(x)),plot=FALSE,shp=FALSE){
+indep_two_Populations = function(x,group,basegroup=c(1,2),xname=deparse(substitute(x)),plot=FALSE,shp=FALSE){
+
   descrip=function(x){c(N=length(na.omit(x)),Mean=round(mean(x,na.rm=T),2),S.D=round(sd(x,na.rm=T),2),Median=round(median(x,na.rm=T),2),MIN=round(min(x,na.rm = T),2),MAX=round(max(x,na.rm = T),2),I.Q.R=paste("(",sprintf("%0.2f",summary(x)[2]),",",sprintf("%0.2f",summary(x)[5]),")",sep=""))}
   tab=do.call(rbind,tapply(x,group,descrip))
 
@@ -466,11 +485,8 @@ indep_two_Populations = function(x,group,basegroup=1,xname=deparse(substitute(x)
                    tab,
                    Shapiro.test.Pvale="",
                    CI="",
-                   #Mean.Diff= "",#c(round(t.test(x~group,mu=0,var.eq=F,paired=F)$estimate[2]-t.test(x~group,mu=0,var.eq=F,paired=F)$estimate[1],3),""),
-                   #Test_Stat="",#c(paste("t-stat:",round(t.test(x~group,mu=0,var.eq=F,paired=F)$statistic,3),sep=" "),rep("",nlevels(group)-1)), #----- t- test test statistic
-                   #Conf_Int= "",#c(paste("(",round(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[1],3),",",round(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[2],3),")",sep = ""),rep("",nlevels(group)-1)),  #----- Confidence Interval
-                   P.ValueP= "",#c(ifelse(sprintf("%0.3f",t.test(x~group,mu=0,var.eq=F,paired=F)$p.value)=="0.000","<0.001",sprintf("%0.3f",t.test(x~group,mu=0,var.eq=F,paired=F)$p.value)),rep("",nlevels(group)-1)),              #----- t- test P-value
-                   P.valueNP="")#c(ifelse(sprintf("%0.3f",wilcox.test(x~group,exact=FALSE)$p.value)=="0.000","<0.001",sprintf("%0.3f",wilcox.test(x~group,exact=FALSE)$p.value)),rep("",nlevels(group)-1)))                             #----- Mann Whitney U test P-Value
+                   P.ValueP= "",
+                   P.valueNP="")
     rownames(tab)=NULL
     return(tab)
   }
@@ -484,42 +500,31 @@ indep_two_Populations = function(x,group,basegroup=1,xname=deparse(substitute(x)
                      Levels=levels(group),
                      tab,
                      Shapiro.test.Pvale=shp,
-                     Mean.Diff= c(round(t.test(x~group,mu=0,var.eq=F,paired=F)$estimate[3-basegroup]-t.test(x~group,mu=0,var.eq=F,paired=F)$estimate[basegroup],3),""),
+                     Mean.Diff= c(ifelse(basegroup==1,c(round(t.test(x[which(group==levels(group)[2])],x[which(group==levels(group)[1])],mu=0,var.eq=F,paired=F)$estimate[1]-t.test(x[which(group==levels(group)[2])],x[which(group==levels(group)[1])],mu=0,var.eq=F,paired=F)$estimate[2],3)),
+                                         c(round(t.test(x[which(group==levels(group)[1])],x[which(group==levels(group)[2])],mu=0,var.eq=F,paired=F)$estimate[1]-t.test(x[which(group==levels(group)[1])],x[which(group==levels(group)[2])],mu=0,var.eq=F,paired=F)$estimate[2],3))),""),
                      #Test_Stat=c(paste("t-stat:",round(t.test(x~group,mu=0,var.eq=F,paired=F)$statistic,3),sep=" "),rep("",nlevels(group)-1)), #----- t- test test statistic
                      #Conf_Int= c(paste("(",round(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[1],3),",",round(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[2],3),")",sep = ""),rep("",nlevels(group)-1)),  #----- Confidence Interval
-                     CI= c(paste0("(",sprintf("%0.2f",t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[1]),",",sprintf("%0.2f",t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[2]),")"),rep("",nlevels(group)-1)),
+                     CI= c(ifelse(basegroup==1,c(paste0("(",sprintf("%0.2f",t.test(x[which(group==levels(group)[2])],x[which(group==levels(group)[1])],mu=0,var.eq=F,paired=F)$conf.int[1]),",",sprintf("%0.2f",t.test(x[which(group==levels(group)[2])],x[which(group==levels(group)[1])],mu=0,var.eq=F,paired=F)$conf.int[2]),")"),rep("",nlevels(group)-1)),
+                                  c(paste0("(",sprintf("%0.2f",t.test(x[which(group==levels(group)[1])],x[which(group==levels(group)[2])],mu=0,var.eq=F,paired=F)$conf.int[1]),",",sprintf("%0.2f",t.test(x[which(group==levels(group)[1])],x[which(group==levels(group)[2])],mu=0,var.eq=F,paired=F)$conf.int[2]),")"),rep("",nlevels(group)-1))),""),
                      P.ValueP= c(ifelse(sprintf("%0.3f",t.test(x~group,mu=0,var.eq=F,paired=F)$p.value)=="0.000","<0.001",sprintf("%0.3f",t.test(x~group,mu=0,var.eq=F,paired=F)$p.value)),rep("",nlevels(group)-1)),              #----- t- test P-value
                      P.valueNP=c(ifelse(sprintf("%0.3f",wilcox.test(x~group,exact=FALSE)$p.value)=="0.000","<0.001",sprintf("%0.3f",wilcox.test(x~group,exact=FALSE)$p.value)),rep("",nlevels(group)-1)))                             #----- Mann Whitney U test P-Value
       rownames(tab)=NULL
-      #return(tab)
-      if(as.numeric(na.omit(tab$Mean.Diff)[1])!=0 & as.numeric(na.omit(tab$Mean.Diff)[1])>=t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[1] & as.numeric(tab$Mean.Diff[1])<=t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[2]){
-        return(tab)
-      }
-      else{
-        tab$CI= c(paste0("(",sprintf("%0.2f",(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[2]*(-1))),",",sprintf("%0.2f",(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[1]*(-1))),")"),rep("",nlevels(group)-1))
-        return(tab)
-      }
+      return(tab)
     }else{
       tab=data.frame(Var=c(xname,rep("",nlevels(group)-1)),
                      Group=c(deparse(substitute(group)),rep("",nlevels(group)-1)),
                      Levels=levels(group),
                      tab,
-                     Mean.Diff= c(round(t.test(x~group,mu=0,var.eq=F,paired=F)$estimate[3-basegroup]-t.test(x~group,mu=0,var.eq=F,paired=F)$estimate[basegroup],3),""),
+                     Mean.Diff= c(ifelse(basegroup==1,c(round(t.test(x[which(group==levels(group)[2])],x[which(group==levels(group)[1])],mu=0,var.eq=F,paired=F)$estimate[1]-t.test(x[which(group==levels(group)[2])],x[which(group==levels(group)[1])],mu=0,var.eq=F,paired=F)$estimate[2],3)),
+                                         c(round(t.test(x[which(group==levels(group)[1])],x[which(group==levels(group)[2])],mu=0,var.eq=F,paired=F)$estimate[1]-t.test(x[which(group==levels(group)[1])],x[which(group==levels(group)[2])],mu=0,var.eq=F,paired=F)$estimate[2],3))),""),
                      #Test_Stat=c(paste("t-stat:",round(t.test(x~group,mu=0,var.eq=F,paired=F)$statistic,3),sep=" "),rep("",nlevels(group)-1)), #----- t- test test statistic
                      #Conf_Int= c(paste("(",round(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[1],3),",",round(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[2],3),")",sep = ""),rep("",nlevels(group)-1)),  #----- Confidence Interval
-                     CI= c(paste0("(",sprintf("%0.2f",t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[1]),",",sprintf("%0.2f",t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[2]),")"),rep("",nlevels(group)-1)),
+                     CI= c(ifelse(basegroup==1,c(paste0("(",sprintf("%0.2f",t.test(x[which(group==levels(group)[2])],x[which(group==levels(group)[1])],mu=0,var.eq=F,paired=F)$conf.int[1]),",",sprintf("%0.2f",t.test(x[which(group==levels(group)[2])],x[which(group==levels(group)[1])],mu=0,var.eq=F,paired=F)$conf.int[2]),")"),rep("",nlevels(group)-1)),
+                                  c(paste0("(",sprintf("%0.2f",t.test(x[which(group==levels(group)[1])],x[which(group==levels(group)[2])],mu=0,var.eq=F,paired=F)$conf.int[1]),",",sprintf("%0.2f",t.test(x[which(group==levels(group)[1])],x[which(group==levels(group)[2])],mu=0,var.eq=F,paired=F)$conf.int[2]),")"),rep("",nlevels(group)-1))),""),
                      P.ValueP= c(ifelse(sprintf("%0.3f",t.test(x~group,mu=0,var.eq=F,paired=F)$p.value)=="0.000","<0.001",sprintf("%0.3f",t.test(x~group,mu=0,var.eq=F,paired=F)$p.value)),rep("",nlevels(group)-1)),              #----- t- test P-value
                      P.valueNP=c(ifelse(sprintf("%0.3f",wilcox.test(x~group,exact=FALSE)$p.value)=="0.000","<0.001",sprintf("%0.3f",wilcox.test(x~group,exact=FALSE)$p.value)),rep("",nlevels(group)-1)))                             #----- Mann Whitney U test P-Value
       rownames(tab)=NULL
-      #return(tab)
-      if(as.numeric(na.omit(tab$Mean.Diff)[1])!=0 & as.numeric(na.omit(tab$Mean.Diff)[1])>=t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[1] & as.numeric(tab$Mean.Diff[1])<=t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[2]){
-        return(tab)
-      }
-      else{
-        tab$CI= c(paste0("(",sprintf("%0.2f",(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[2]*(-1))),",",sprintf("%0.2f",(t.test(x~group,mu=0,var.eq=F,paired=F)$conf.int[1]*(-1))),")"),rep("",nlevels(group)-1))
-        return(tab)
-      }
-
+      return(tab)
     }
   }
 

@@ -3,7 +3,8 @@ Type: Package
 Title: It provides different types of statistical analysis and helps to generate suitable statistical summary outputs ready for publications
 Version: 0.1.0
 Imports:
-  FSA
+  FSA,
+  DescTools
 Author: Rajesh Majumder
 Maintainer: Rajesh Majumder <rajesh.majumder@sjri.res.in>
 Description: More about what it does (maybe more than one line)

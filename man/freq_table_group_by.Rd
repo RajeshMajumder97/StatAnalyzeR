@@ -4,13 +4,7 @@
 \alias{freq_table_group_by}
 \title{Group-wise frequency table of a categorical variable}
 \usage{
-freq_table_group_by(
-  Exposure,
-  margin = 1,
-  Outcome,
-  conf.Int. = FALSE,
-  conf.level = 0.95
-)
+freq_table_group_by(x, y, margin = 1, conf.Int. = FALSE, conf.level = 0.95)
 }
 \description{
 Group-wise frequency table of a categorical variable
